@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ReactMarkdown from 'react-markdown';
+import Head from "next/head";
 
 const SYSTEM_MESSAGE =
   "You are Cybix,a helpful and versatile AI created by Coxwell using state of the art machine learning models and API's";
@@ -59,6 +60,11 @@ export default function Home() {
   }
 
   return (
+    <><Head>
+      <title>
+        Cybix - Your Friendly neighborhood AI
+      </title>
+    </Head>
     <div className="flex flex-col h-screen">
       {/* Navbar */}
       <nav className="shadow px-4 py-2 flex flex-row justify-between items-center">
@@ -121,5 +127,6 @@ export default function Home() {
         <div className="mt-4 text-lg">{botMessage}</div>
       </div> */}
     </div>
+    </>
   );
 }
