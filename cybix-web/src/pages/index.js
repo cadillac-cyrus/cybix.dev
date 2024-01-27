@@ -36,7 +36,7 @@ export default function Home() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: "Bearer " + apiKey,
+          // Authorization: `Bearer ${apiKey}`,
           "X-RapidAPI-Key": apiKey,
           "X-RapidAPI-Host": "chat-gpt26.p.rapidapi.com",
         },
@@ -87,12 +87,6 @@ export default function Home() {
       console.error("error");
       window.alert("Error:" + error.message);
     }
-
-    // setBotMessage(responseJson.result);
-
-    // console.log("botMessage", botMessage);
-
-    // console.log("responseJson", responseJson);
   };
 
   return (
