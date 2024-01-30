@@ -1,23 +1,37 @@
+/* eslint-disable no-mixed-spaces-and-tabs */
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
 import Head from "next/head";
+import ReactMarkdown from 'react-markdown'
 import { createParser } from "eventsource-parser";
-
-const SYSTEM_MESSAGE =
-  "You are Cybix, A helpful and versatile AI created by Coxwell using state of the art machine learning models and API's";
+import { useEffect } from "react";
 
 export default function Home() {
   const [apiKey, setApiKey] = useState("");
-  // const [botMessage, setBotMessage] = useState("");
+  const [userMessage, setUserMessage] = useState("");
   const [messages, setMessages] = useState([
     {
       role: "system",
-      content: SYSTEM_MESSAGE,
+      content:
+        "You are Cybix, a helpful AI developed by Coxwell and powered by state-of-the-art machine learning models.",
     },
   ]);
-  const [userMessage, setUserMessage] = useState("");
 
-  const API_URL = "https://chatgpt-api8.p.rapidapi.com/";
+  
+
+  const API_URL = "https://chat-gpt26.p.rapidapi.com/";
+  useEffect(() => {
+    const eventSource = new EventSource(API_URL);
+
+    eventSource.onmessage = (event) => {
+      const parsedEvent = createParser().parse(event.data);
+      const updatedMessages = [...messages, parsedEvent];
+      setMessages(updatedMessages);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [messages]);
 
   const sendRequest = async () => {
     const updatedMessages = [
@@ -37,52 +51,21 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
           // Authorization: `Bearer ${apiKey}`,
-          "X-RapidAPI-Key": apiKey,
-          "X-RapidAPI-Host": "chatgpt-api8.p.rapidapi.com",
+          'X-RapidAPI-Key': '0ab93b85bemsh32eafbb76981d14p114336jsn454ee845834c',
+		      'X-RapidAPI-Host': 'chat-gpt26.p.rapidapi.com'
         },
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
           messages: updatedMessages,
-          stream: true,
+          // stream: true,
         }),
       });
 
-      const reader = response.body.getReader();
+      const resJson = await response.json();
+      console.log(resJson);
 
-      let newMessage = "";
-      const parser = createParser((event) => {
-        if (event.type === "event") {
-          const data = event.data;
-          if (data === "[DONE]") {
-            return;
-          }
-          const json = JSON.parse(event.data);
-          const content = json.choices[0].delta.content;
-
-          if (!content) {
-            return;
-          }
-
-          newMessage += content;
-
-          const updatedMessages2 = [
-            ...updatedMessages,
-            { role: "assistant", content: newMessage },
-          ];
-
-          setMessages(updatedMessages2);
-        } else {
-          return "";
-        }
-      });
-
-      // eslint-disable-next-line
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const text = new TextDecoder().decode(value);
-        parser.feed(text);
-      }
+      const updatedMessages2 = [...updatedMessages, resJson.choices[0].message];
+      setMessages(updatedMessages2);
     } catch (error) {
       console.error("error");
       window.alert("Error:" + error.message);
@@ -92,70 +75,68 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Cybix - Your Friendly neighborhood AI</title>
+        <title>Cybix</title>
       </Head>
       <div className="flex flex-col h-screen">
         {/* Navbar */}
-        <nav className="shadow px-4 py-2 flex flex-row justify-between items-center">
-          <div className="text-xl font-bold">Cybix</div>
-          <div>
-            <input
-              type="password"
-              className="border p-1 rounded"
-              onChange={(e) => setApiKey(e.target.value)}
-              value={apiKey}
-              placeholder="Paste Api Key Here"
-            ></input>
+        <nav className="bg-white shadow w-full">
+          <div className="px-4 h-14 flex justify-between items-center">
+            <div className="text-xl font-bold">Cybix</div>
+            <div>
+              <input
+                type="password"
+                className="border rounded p-1"
+                placeholder="Enter API key.."
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+              />
+            </div>
           </div>
         </nav>
 
         {/* Message History */}
         <div className="flex-1 overflow-y-scroll">
-          <div className="w-full max-w-screen-md mx-auto px-4">
+          <div className="mx-auto w-full max-w-screen-md p-4 ">
             {messages
-              .filter((message) => message.role !== "system")
-              .map((message, idx) => (
-                <div key={idx} className="my-3">
+              .filter((msg) => msg.role !== "system")
+              .map((msg, idx) => (
+                <div key={idx} className="mt-3">
                   <div className="font-bold">
-                    {message.role === "user" ? "You" : "Cybix"}
+                    {msg.role === "user" ? "You" : "Cybix"}
                   </div>
-                  <div className="text-lg prose">
-                    <ReactMarkdown>{message.content}</ReactMarkdown>
-                  </div>
+                  <div className="text-lg pros">
+                    <ReactMarkdown>
+                    {msg.content}
+                    </ReactMarkdown>
+                    </div>
                 </div>
               ))}
           </div>
         </div>
 
-        {/* Message Input Box */}
-        <div>
-          <div className="w-full max-w-screen-md mx-auto flex px-4 pb-4">
-            <textarea
-              value={userMessage}
-              onChange={(e) => setUserMessage(e.target.value)}
-              className="border text-lg rounded-md p-1 flex-1 "
-              rows={1}
-            />
-            <button
-              onClick={sendRequest}
-              className="border rounded-md bg-blue-500 hover:bg-blue-600 text-white px-4 ml-2"
-            >
-              Send
-            </button>
-          </div>
+        {/* Message Input */}
+        <div className="mx-auto w-full max-w-screen-md px-4 pt-0 pb-2 flex">
+          <textarea
+            className="border rounded-md text-lg p-2 flex-1"
+            rows={1}
+            placeholder="Ask me anything..."
+            value={userMessage}
+            onChange={(e) => setUserMessage(e.target.value)}
+          />
+          <button
+            onClick={sendRequest}
+            className="border rounded-md bg-blue-500 hover:bg-blue-600 text-white px-4 ml-2"
+          >
+            Send
+          </button>
         </div>
-
-        {/* Test Button
-      <div className="p-4">
-        <button
-          onClick={sendRequest}
-          className="w-40 bordered rounded bg-blue-500 hover:bg-blue-600 text-white p-2"
-        >
-          Send Request
-        </button>
-        <div className="mt-4 text-lg">{botMessage}</div>
-      </div> */}
       </div>
     </>
   );
 }
+
+
+
+
+
+
