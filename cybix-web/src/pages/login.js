@@ -32,7 +32,10 @@ export default function Login() {
         const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: 'magiclink' });
 
         if (data) {
-            console.log("Signed in Succesfully")
+            console.log("Signed in Succesfully", data)
+        }
+        if (error) {
+            console.error("Failed to sign in", error)
         }
     }
 
