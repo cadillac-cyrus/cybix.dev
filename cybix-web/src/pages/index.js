@@ -4,7 +4,7 @@ import Head from "next/head";
 import { createParser } from "eventsource-parser";
 
 const SYSTEM_MESSAGE =
-  "You are Cybix,a helpful and versatile AI created by Coxwell using state of the art machine learning models and API's";
+  "You are Cybix, A helpful and versatile AI created by Coxwell using state of the art machine learning models and API's";
 
 export default function Home() {
   const [apiKey, setApiKey] = useState("");
@@ -17,7 +17,7 @@ export default function Home() {
   ]);
   const [userMessage, setUserMessage] = useState("");
 
-  const API_URL = "https://chat-gpt26.p.rapidapi.com/";
+  const API_URL = "https://chatgpt-api8.p.rapidapi.com/";
 
   const sendRequest = async () => {
     const updatedMessages = [
@@ -38,7 +38,7 @@ export default function Home() {
           "Content-Type": "application/json",
           // Authorization: `Bearer ${apiKey}`,
           "X-RapidAPI-Key": apiKey,
-          "X-RapidAPI-Host": "chat-gpt26.p.rapidapi.com",
+          "X-RapidAPI-Host": "chatgpt-api8.p.rapidapi.com",
         },
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
