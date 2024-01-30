@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Head from "next/head";
 import ReactMarkdown from 'react-markdown'
-// import { createParser } from "eventsource-parser";
+import { createParser } from "eventsource-parser";
 // import { useEffect } from "react";
 
 export default function Home() {
@@ -18,7 +18,7 @@ export default function Home() {
 
   
 
-  const API_URL = "https://chat-gpt26.p.rapidapi.com/";
+  const API_URL = "https://api.openai.com/v1/chat/completions";
   const sendRequest = async () => {
     const updatedMessages = [
       ...messages,
@@ -36,27 +36,57 @@ export default function Home() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${apiKey}`,
-          'X-RapidAPI-Key': apiKey,
-		      'X-RapidAPI-Host': 'chat-gpt26.p.rapidapi.com'
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
           messages: updatedMessages,
-          // stream: true,
+          stream: true,
         }),
       });
 
-      const resJson = await response.json();
-      console.log(resJson);
+      const reader = response.body.getReader();
 
-      const updatedMessages2 = [...updatedMessages, resJson.choices[0].message];
-      setMessages(updatedMessages2);
+      let newMessage = "";
+      const parser = createParser((event) => {
+        if (event.type === "event") {
+          const data = event.data;
+          if (data === "[DONE]") {
+            return;
+          }
+          const json = JSON.parse(event.data);
+          const content = json.choices[0].delta.content;
+
+          if (!content) {
+            return;
+          }
+
+          newMessage += content;
+
+          const updatedMessages2 = [
+            ...updatedMessages,
+            { role: "assistant", content: newMessage },
+          ];
+
+          setMessages(updatedMessages2);
+        } else {
+          return "";
+        }
+      });
+
+      // eslint-disable-next-line
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = new TextDecoder().decode(value);
+        parser.feed(text);
+      }
     } catch (error) {
       console.error("error");
       window.alert("Error:" + error.message);
     }
   };
+
 
   return (
     <>
@@ -90,7 +120,7 @@ export default function Home() {
                   <div className="font-bold">
                     {msg.role === "user" ? "You" : "Cybix"}
                   </div>
-                  <div className="text-lg pros">
+                  <div className="text-lg prose">
                     <ReactMarkdown>
                     {msg.content}
                     </ReactMarkdown>
