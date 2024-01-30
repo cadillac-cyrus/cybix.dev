@@ -11,7 +11,29 @@ export default function Login() {
     const supabase = useSupabaseClient();
 
     async function sendCode() {
-         
+        console.log("email entered:", email);
+        const { data, error } = await supabase.auth.signInWithOtp({
+            email: 'example@email.com',
+            // options: {
+            //   emailRedirectTo: 'https://example.com/welcome'
+            // }
+        });
+
+        if (data) {
+            console.log('verification code sent');
+        }
+        if (error) {
+            console.error("Failed to send verification code", error);
+        }
+    }
+
+    async function submitCode() {
+
+        const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: 'magiclink' });
+
+        if (data) {
+            console.log("Signed in Succesfully")
+        }
     }
 
     return (
@@ -57,7 +79,7 @@ export default function Login() {
                                 value={code}
                             />
                             <button
-                                // onClick={submitCode}
+                                onClick={submitCode}
                                 className="w-40 border border-blue-600 text-sm font-medium px-4 py-2 mt-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white"
                             >
                                 Sign In
