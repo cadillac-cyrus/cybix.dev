@@ -2,8 +2,8 @@
 import { useState } from "react";
 import Head from "next/head";
 import ReactMarkdown from 'react-markdown'
-import { createParser } from "eventsource-parser";
-import { useEffect } from "react";
+// import { createParser } from "eventsource-parser";
+// import { useEffect } from "react";
 
 export default function Home() {
   const [apiKey, setApiKey] = useState("");
@@ -19,20 +19,6 @@ export default function Home() {
   
 
   const API_URL = "https://chat-gpt26.p.rapidapi.com/";
-  useEffect(() => {
-    const eventSource = new EventSource(API_URL);
-
-    eventSource.onmessage = (event) => {
-      const parsedEvent = createParser().parse(event.data);
-      const updatedMessages = [...messages, parsedEvent];
-      setMessages(updatedMessages);
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, [messages]);
-
   const sendRequest = async () => {
     const updatedMessages = [
       ...messages,
@@ -51,7 +37,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
           // Authorization: `Bearer ${apiKey}`,
-          'X-RapidAPI-Key': '0ab93b85bemsh32eafbb76981d14p114336jsn454ee845834c',
+          'X-RapidAPI-Key': apiKey,
 		      'X-RapidAPI-Host': 'chat-gpt26.p.rapidapi.com'
         },
         body: JSON.stringify({
